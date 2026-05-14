@@ -1,6 +1,8 @@
 const express = require('express');
 const { pool } = require('../db/schema');
 const { authenticateToken } = require('../middleware/auth');
+const { aiRateLimiter } = require('../middleware/rateLimiter');
+const { persistAnalysis } = require('./aiAnalyses');
 const router = express.Router();
 
 const callOpenRouter = async (prompt, context) => {
@@ -13,7 +15,7 @@ const callOpenRouter = async (prompt, context) => {
       'X-Title': 'DEI Analytics Platform'
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL,
+      model: process.env.OPENROUTER_MODEL || 'anthropic/claude-3-5-sonnet-20241022',
       messages: [
         {
           role: 'system',
@@ -34,7 +36,7 @@ const callOpenRouter = async (prompt, context) => {
 };
 
 // Diversity Metrics AI Analysis
-router.post('/analyze-diversity', authenticateToken, async (req, res) => {
+router.post('/analyze-diversity', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const metrics = await pool.query('SELECT * FROM diversity_metrics ORDER BY department, metric_type');
     const analysis = await callOpenRouter(
@@ -42,11 +44,12 @@ router.post('/analyze-diversity', authenticateToken, async (req, res) => {
       metrics.rows
     );
     res.json({ analysis, data_points: metrics.rows.length });
+    persistAnalysis('diversity_metrics', null, 'analyze-diversity', analysis, { data_points: metrics.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Pay Equity AI Analysis
-router.post('/analyze-pay-equity', authenticateToken, async (req, res) => {
+router.post('/analyze-pay-equity', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM pay_equity ORDER BY department, role_title');
     const analysis = await callOpenRouter(
@@ -54,11 +57,12 @@ router.post('/analyze-pay-equity', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('pay_equity', null, 'analyze-pay-equity', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Hiring Bias AI Analysis
-router.post('/analyze-hiring-bias', authenticateToken, async (req, res) => {
+router.post('/analyze-hiring-bias', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM hiring_bias ORDER BY department, job_title');
     const analysis = await callOpenRouter(
@@ -66,11 +70,12 @@ router.post('/analyze-hiring-bias', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('hiring_bias', null, 'analyze-hiring-bias', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Promotion Bias AI Analysis
-router.post('/analyze-promotion-bias', authenticateToken, async (req, res) => {
+router.post('/analyze-promotion-bias', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM promotion_bias ORDER BY department, level_from');
     const analysis = await callOpenRouter(
@@ -78,11 +83,12 @@ router.post('/analyze-promotion-bias', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('promotion_bias', null, 'analyze-promotion-bias', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Compliance AI Analysis
-router.post('/analyze-compliance', authenticateToken, async (req, res) => {
+router.post('/analyze-compliance', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM compliance_reports ORDER BY priority DESC, due_date');
     const analysis = await callOpenRouter(
@@ -90,11 +96,12 @@ router.post('/analyze-compliance', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('compliance_reports', null, 'analyze-compliance', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Benchmarking AI Analysis
-router.post('/analyze-benchmarking', authenticateToken, async (req, res) => {
+router.post('/analyze-benchmarking', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM benchmarking ORDER BY category, metric_name');
     const analysis = await callOpenRouter(
@@ -102,11 +109,12 @@ router.post('/analyze-benchmarking', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('benchmarking', null, 'analyze-benchmarking', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Employee Surveys AI Analysis
-router.post('/analyze-surveys', authenticateToken, async (req, res) => {
+router.post('/analyze-surveys', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM employee_surveys ORDER BY department, category');
     const analysis = await callOpenRouter(
@@ -114,11 +122,12 @@ router.post('/analyze-surveys', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('employee_surveys', null, 'analyze-surveys', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Training Programs AI Analysis
-router.post('/analyze-training', authenticateToken, async (req, res) => {
+router.post('/analyze-training', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM training_programs ORDER BY department, program_name');
     const analysis = await callOpenRouter(
@@ -126,11 +135,12 @@ router.post('/analyze-training', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('training_programs', null, 'analyze-training', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Retention Analysis AI
-router.post('/analyze-retention', authenticateToken, async (req, res) => {
+router.post('/analyze-retention', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM retention_analysis ORDER BY department, demographic_group');
     const analysis = await callOpenRouter(
@@ -138,11 +148,12 @@ router.post('/analyze-retention', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('retention_analysis', null, 'analyze-retention', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Leadership Pipeline AI Analysis
-router.post('/analyze-leadership', authenticateToken, async (req, res) => {
+router.post('/analyze-leadership', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM leadership_pipeline ORDER BY level, department');
     const analysis = await callOpenRouter(
@@ -150,11 +161,12 @@ router.post('/analyze-leadership', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('leadership_pipeline', null, 'analyze-leadership', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Supplier Diversity AI Analysis
-router.post('/analyze-suppliers', authenticateToken, async (req, res) => {
+router.post('/analyze-suppliers', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM supplier_diversity ORDER BY certification_type, annual_spend DESC');
     const analysis = await callOpenRouter(
@@ -162,11 +174,12 @@ router.post('/analyze-suppliers', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('supplier_diversity', null, 'analyze-suppliers', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ERG Management AI Analysis
-router.post('/analyze-ergs', authenticateToken, async (req, res) => {
+router.post('/analyze-ergs', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM erg_management ORDER BY engagement_score DESC');
     const analysis = await callOpenRouter(
@@ -174,11 +187,12 @@ router.post('/analyze-ergs', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('erg_management', null, 'analyze-ergs', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Incident Reports AI Analysis
-router.post('/analyze-incidents', authenticateToken, async (req, res) => {
+router.post('/analyze-incidents', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM incident_reports ORDER BY severity DESC, reported_date DESC');
     const analysis = await callOpenRouter(
@@ -186,11 +200,12 @@ router.post('/analyze-incidents', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('incident_reports', null, 'analyze-incidents', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Accessibility AI Analysis
-router.post('/analyze-accessibility', authenticateToken, async (req, res) => {
+router.post('/analyze-accessibility', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM accessibility ORDER BY score ASC');
     const analysis = await callOpenRouter(
@@ -198,11 +213,12 @@ router.post('/analyze-accessibility', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('accessibility', null, 'analyze-accessibility', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Workforce Demographics AI Analysis
-router.post('/analyze-workforce', authenticateToken, async (req, res) => {
+router.post('/analyze-workforce', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const data = await pool.query('SELECT * FROM workforce_demographics ORDER BY department, job_level');
     const analysis = await callOpenRouter(
@@ -210,11 +226,12 @@ router.post('/analyze-workforce', authenticateToken, async (req, res) => {
       data.rows
     );
     res.json({ analysis, data_points: data.rows.length });
+    persistAnalysis('workforce_demographics', null, 'analyze-workforce', analysis, { data_points: data.rows.length }, req.user?.id).catch(console.error);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Single record AI analysis
-router.post('/analyze-record', authenticateToken, async (req, res) => {
+router.post('/analyze-record', authenticateToken, aiRateLimiter, async (req, res) => {
   try {
     const { record, type } = req.body;
     const prompts = {

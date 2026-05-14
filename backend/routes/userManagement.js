@@ -12,13 +12,18 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Get all users
+// Get all users (paginated)
 router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT id, email, name, role, created_at FROM users ORDER BY id'
-    );
-    res.json(result.rows);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+    const [dataResult, countResult] = await Promise.all([
+      pool.query('SELECT id, email, name, role, created_at FROM users ORDER BY id LIMIT $1 OFFSET $2', [limit, offset]),
+      pool.query('SELECT COUNT(*) as total FROM users')
+    ]);
+    const total = parseInt(countResult.rows[0].total);
+    res.json({ data: dataResult.rows, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -25,7 +25,23 @@ import Reports from './pages/Reports';
 import Alerts from './pages/Alerts';
 import AuditLog from './pages/AuditLog';
 import UserManagement from './pages/UserManagement';
+import AITools from './pages/AITools';
 import './App.css';
+
+// // === Batch 02 Gaps & Frontend Mounts ===
+import CfPredictiveEquityForecasting from './pages/CfPredictiveEquityForecasting';
+import CfBiasMitigationPlaybook from './pages/CfBiasMitigationPlaybook';
+import CfIntersectionalityAnalysis from './pages/CfIntersectionalityAnalysis';
+import CfTalentPipelineSimulation from './pages/CfTalentPipelineSimulation';
+import CfPeerBenchmarking from './pages/CfPeerBenchmarking';
+import GapNoneSignificantExcellentAiToRouteAlignment16AiEndpo from './pages/GapNoneSignificantExcellentAiToRouteAlignment16AiEndpo';
+import GapAlertsLacksAiPrioritizationEndpoint from './pages/GapAlertsLacksAiPrioritizationEndpoint';
+import GapUsermanagementLacksAiAccessPatternAnomalyDetection from './pages/GapUsermanagementLacksAiAccessPatternAnomalyDetection';
+import GapLimitedHrisIntegrationNoWorkdaySuccessfactorsBamboohr from './pages/GapLimitedHrisIntegrationNoWorkdaySuccessfactorsBamboohr';
+import GapLimitedRealTimeAlertingBeyondAlertsJsStorage from './pages/GapLimitedRealTimeAlertingBeyondAlertsJsStorage';
+import GapNoActionPlanAutomationOrTrackingWorkflow from './pages/GapNoActionPlanAutomationOrTrackingWorkflow';
+import GapNoWebhooks from './pages/GapNoWebhooks';
+import GapNoPaymentBillingModule from './pages/GapNoPaymentBillingModule';
 
 const API = 'http://localhost:3001/api';
 
@@ -95,6 +111,7 @@ function App() {
             <li><a href="/alerts">Alerts</a></li>
             <li><a href="/audit-log">Audit Log</a></li>
             <li><a href="/user-management">User Management</a></li>
+            <li><a href="/ai-tools">AI Tools</a></li>
           </ul>
           <div className="sidebar-footer">
             <div className="user-info">
@@ -133,8 +150,24 @@ function App() {
             <Route path="/alerts" element={<Alerts token={token} />} />
             <Route path="/audit-log" element={<AuditLog token={token} />} />
             <Route path="/user-management" element={<UserManagement token={token} user={user} />} />
+            <Route path="/ai-tools" element={<AITools token={token} />} />
             <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+          
+        {/* // === Batch 02 Gaps & Frontend Mounts === */}
+        <Route path="/cf/predictive-equity-forecasting" element={<CfPredictiveEquityForecasting />} />
+        <Route path="/cf/bias-mitigation-playbook" element={<CfBiasMitigationPlaybook />} />
+        <Route path="/cf/intersectionality-analysis" element={<CfIntersectionalityAnalysis />} />
+        <Route path="/cf/talent-pipeline-simulation" element={<CfTalentPipelineSimulation />} />
+        <Route path="/cf/peer-benchmarking" element={<CfPeerBenchmarking />} />
+        <Route path="/gap/none-significant-excellent-ai-to-route-alignment-16-ai-endpo" element={<GapNoneSignificantExcellentAiToRouteAlignment16AiEndpo />} />
+        <Route path="/gap/alerts-lacks-ai-prioritization-endpoint" element={<GapAlertsLacksAiPrioritizationEndpoint />} />
+        <Route path="/gap/usermanagement-lacks-ai-access-pattern-anomaly-detection" element={<GapUsermanagementLacksAiAccessPatternAnomalyDetection />} />
+        <Route path="/gap/limited-hris-integration-no-workday-successfactors-bamboohr" element={<GapLimitedHrisIntegrationNoWorkdaySuccessfactorsBamboohr />} />
+        <Route path="/gap/limited-real-time-alerting-beyond-alerts-js-storage" element={<GapLimitedRealTimeAlertingBeyondAlertsJsStorage />} />
+        <Route path="/gap/no-action-plan-automation-or-tracking-workflow" element={<GapNoActionPlanAutomationOrTrackingWorkflow />} />
+        <Route path="/gap/no-webhooks" element={<GapNoWebhooks />} />
+        <Route path="/gap/no-payment-billing-module" element={<GapNoPaymentBillingModule />} />
+      </Routes>
         </main>
       </div>
     </Router>
