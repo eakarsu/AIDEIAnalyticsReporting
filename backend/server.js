@@ -90,6 +90,10 @@ app.use('/api/ai', require('./routes/pipelineSimulate'));
 app.use('/api/ai', require('./routes/intersectionality'));
 app.use('/api/ai', require('./routes/biasPlaybook'));
 app.use('/api/ai', require('./routes/equityForecast'));
+
+// Custom Views (DEI domain) — must be mounted BEFORE any 404 / fallthrough handler
+app.use('/api/custom-views', require('./routes/customViews'));
+
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 

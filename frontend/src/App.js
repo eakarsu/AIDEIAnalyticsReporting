@@ -26,6 +26,7 @@ import Alerts from './pages/Alerts';
 import AuditLog from './pages/AuditLog';
 import UserManagement from './pages/UserManagement';
 import AITools from './pages/AITools';
+import CustomViewsPage from './pages/CustomViewsPage';
 import './App.css';
 
 // // === Batch 02 Gaps & Frontend Mounts ===
@@ -112,6 +113,7 @@ function App() {
             <li><a href="/audit-log">Audit Log</a></li>
             <li><a href="/user-management">User Management</a></li>
             <li><a href="/ai-tools">AI Tools</a></li>
+            <li><a href="/custom-views">DEI Views</a></li>
           </ul>
           <div className="sidebar-footer">
             <div className="user-info">
@@ -151,6 +153,7 @@ function App() {
             <Route path="/audit-log" element={<AuditLog token={token} />} />
             <Route path="/user-management" element={<UserManagement token={token} user={user} />} />
             <Route path="/ai-tools" element={<AITools token={token} />} />
+            <Route path="/custom-views" element={<CustomViewsPage token={token} />} />
             <Route path="*" element={<Navigate to="/" />} />
           
         {/* // === Batch 02 Gaps & Frontend Mounts === */}
