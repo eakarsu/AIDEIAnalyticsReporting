@@ -27,6 +27,7 @@ import AuditLog from './pages/AuditLog';
 import UserManagement from './pages/UserManagement';
 import AITools from './pages/AITools';
 import CustomViewsPage from './pages/CustomViewsPage';
+import PayEquityRemediationTracker from './pages/PayEquityRemediationTracker';
 import './App.css';
 
 // // === Batch 02 Gaps & Frontend Mounts ===
@@ -43,6 +44,9 @@ import GapLimitedRealTimeAlertingBeyondAlertsJsStorage from './pages/GapLimitedR
 import GapNoActionPlanAutomationOrTrackingWorkflow from './pages/GapNoActionPlanAutomationOrTrackingWorkflow';
 import GapNoWebhooks from './pages/GapNoWebhooks';
 import GapNoPaymentBillingModule from './pages/GapNoPaymentBillingModule';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
 
 const API = 'http://localhost:3001/api';
 
@@ -114,6 +118,7 @@ function App() {
             <li><a href="/user-management">User Management</a></li>
             <li><a href="/ai-tools">AI Tools</a></li>
             <li><a href="/custom-views">DEI Views</a></li>
+            <li><a href="/pay-equity-remediation-tracker">Pay Remediation</a></li>
           </ul>
           <div className="sidebar-footer">
             <div className="user-info">
@@ -128,6 +133,9 @@ function App() {
         </nav>
         <main className="main-content">
           <Routes>
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
             <Route path="/" element={<Dashboard token={token} user={user} />} />
             <Route path="/diversity-metrics" element={<DiversityMetrics token={token} />} />
             <Route path="/pay-equity" element={<PayEquity token={token} />} />
@@ -154,6 +162,7 @@ function App() {
             <Route path="/user-management" element={<UserManagement token={token} user={user} />} />
             <Route path="/ai-tools" element={<AITools token={token} />} />
             <Route path="/custom-views" element={<CustomViewsPage token={token} />} />
+            <Route path="/pay-equity-remediation-tracker" element={<PayEquityRemediationTracker token={token} />} />
             <Route path="*" element={<Navigate to="/" />} />
           
         {/* // === Batch 02 Gaps & Frontend Mounts === */}
