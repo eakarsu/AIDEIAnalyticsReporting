@@ -4,7 +4,9 @@ const helmet = require('helmet');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const { createTables } = require('./db/schema');
+const { pool } = require('./db/schema');
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters');
 const authRoutes = require('./routes/auth');
 const diversityMetricsRoutes = require('./routes/diversityMetrics');
 const payEquityRoutes = require('./routes/payEquity');
@@ -78,6 +80,7 @@ app.use('/api/alerts', alertsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/import', importDataRoutes);
 app.use('/api/ai-analyses', aiAnalysesRoutes);
+app.use('/api/governed-analyses', require('./routes/governedAnalyses'));
 app.use('/api/ai', aiNewRoutes);
 
 
@@ -100,31 +103,23 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 const start = async () => {
   try {
-    await createTables();
-    console.log('Database tables ready');
+    await pool.query('SELECT 1');
+    console.log('Database connection verified; migrations are not run at startup');
 // // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-none-significant-excellent-ai-to-route-alignment-16-ai-endpo', require('./routes/gap_none_significant_excellent_ai_to_route_alignment_16_ai_endpo'));
 
 // // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-alerts-lacks-ai-prioritization-endpoint', require('./routes/gap_alerts_lacks_ai_prioritization_endpoint'));
 
 // // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-usermanagement-lacks-ai-access-pattern-anomaly-detection', require('./routes/gap_usermanagement_lacks_ai_access_pattern_anomaly_detection'));
 
 // // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-limited-hris-integration-no-workday-successfactors-bamboohr', require('./routes/gap_limited_hris_integration_no_workday_successfactors_bamboohr'));
 
 // // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-limited-real-time-alerting-beyond-alerts-js-storage', require('./routes/gap_limited_real_time_alerting_beyond_alerts_js_storage'));
 
 // // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-action-plan-automation-or-tracking-workflow', require('./routes/gap_no_action_plan_automation_or_tracking_workflow'));
 
 // // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-webhooks', require('./routes/gap_no_webhooks'));
 
 // // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-payment-billing-module', require('./routes/gap_no_payment_billing_module'));
 
     app.listen(PORT, () => {
       console.log(`Backend server running on port ${PORT}`);

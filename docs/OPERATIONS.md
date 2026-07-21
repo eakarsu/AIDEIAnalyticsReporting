@@ -1,0 +1,7 @@
+# Governed workforce-equity analytics operations
+
+Startup no longer creates tables, installs dependencies, creates databases, seeds demo records or kills port owners. Run bootstrap, configure `.env`, migrate explicitly, provision tenant memberships, then start. Demo seed is separately guarded.
+
+The governed workflow registers de-identified dataset manifests rather than employee rows, records lawful purpose and retention, inventories sensitive fields, versions cohort/metric definitions, rejects direct identifiers, enforces a minimum cohort of ten, nulls suppressed counts and values, records missingness and uncertainty, hashes reproducibility inputs, and requires independent qualified interpretation before interventions. Interventions have owners, baseline/outcome metrics and review dates. Tenant roles, optimistic transitions, provider failures and audit history are durable. Generated gap endpoints are not mounted.
+
+HRIS, ATS, payroll, survey, warehouse and case-system adapters remain disabled until credentials, data-processing authorization, deletion semantics and contract fixtures exist. Organization counsel/data-protection officers must approve lawful purpose, retention, attribute access, jurisdiction rules and inference risk. Qualified statisticians and domain reviewers must validate definitions, missingness, uncertainty and fairness. These controls do not certify legal compliance or justify employment decisions about individuals.
