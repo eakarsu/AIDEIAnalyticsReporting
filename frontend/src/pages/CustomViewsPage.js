@@ -34,7 +34,6 @@ function CustomViewsPage({ token: tokenProp }) {
     } catch (e) {
       setError(e.message);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
