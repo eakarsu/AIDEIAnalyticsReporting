@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 
-const API = 'http://localhost:3001/api';
+const configuredApiBase = process.env.REACT_APP_API_URL || '/api';
+const API = configuredApiBase.endsWith('/api')
+  ? configuredApiBase
+  : `${configuredApiBase.replace(/\/$/, '')}/api`;
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -55,7 +58,7 @@ function Login({ onLogin }) {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
           <button type="button" className="auto-fill-btn" onClick={autoFill}>
-            Quick Login (Auto-fill Credentials)
+            Auto Fill Demo Credentials
           </button>
         </form>
       </div>

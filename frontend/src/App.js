@@ -48,7 +48,10 @@ import GapNoPaymentBillingModule from './pages/GapNoPaymentBillingModule';
 import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
 import CodexOperationsFeature from './pages/CodexOperationsFeature';
 
-const API = 'http://localhost:3001/api';
+const configuredApiBase = process.env.REACT_APP_API_URL || '/api';
+const API = configuredApiBase.endsWith('/api')
+  ? configuredApiBase
+  : `${configuredApiBase.replace(/\/$/, '')}/api`;
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
