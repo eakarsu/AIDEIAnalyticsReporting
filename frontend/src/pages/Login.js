@@ -5,14 +5,22 @@ const API = configuredApiBase.endsWith('/api')
   ? configuredApiBase
   : `${configuredApiBase.replace(/\/$/, '')}/api`;
 
+export function configuredDemoCredentials() {
+  if (process.env.NODE_ENV === 'production' || process.env.REACT_APP_ENABLE_DEMO_CREDENTIAL_AUTOFILL !== 'true') return null;
+  const email = process.env.REACT_APP_DEMO_EMAIL || '';
+  const password = process.env.REACT_APP_DEMO_PASSWORD || '';
+  return email && password ? { email, password } : null;
+}
+
 function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const demoCredentials = configuredDemoCredentials();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
     setError('');
     try {
@@ -22,7 +30,7 @@ function Login({ onLogin }) {
         body: JSON.stringify({ email, password })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || 'Login failed');
       onLogin(data.token, data.user);
     } catch (err) {
       setError(err.message);
@@ -31,9 +39,11 @@ function Login({ onLogin }) {
     }
   };
 
-  const autoFill = () => {
-    setEmail(process.env.REACT_APP_DEMO_EMAIL || '');
-    setPassword(process.env.REACT_APP_DEMO_PASSWORD || '');
+  const fillDemoCredentials = () => {
+    if (!demoCredentials) return;
+    setEmail(demoCredentials.email);
+    setPassword(demoCredentials.password);
+    setError('');
   };
 
   return (
@@ -47,19 +57,21 @@ function Login({ onLogin }) {
         {error && <div className="login-error">{error}</div>}
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Email Address</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" required />
+            <label htmlFor="login-email">Email Address</label>
+            <input id="login-email" type="email" autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} placeholder="Enter your email" required />
           </div>
           <div className="form-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" required />
+            <label htmlFor="login-password">Password</label>
+            <input id="login-password" type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} placeholder="Enter your password" required />
           </div>
           <button type="submit" className="login-btn" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
-          <button type="button" className="auto-fill-btn" onClick={autoFill}>
-            Auto Fill Demo Credentials
-          </button>
+          {demoCredentials && (
+            <button type="button" className="auto-fill-btn" onClick={fillDemoCredentials} disabled={loading}>
+              Fill Demo Credentials
+            </button>
+          )}
         </form>
       </div>
     </div>

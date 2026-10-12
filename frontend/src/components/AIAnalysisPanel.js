@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
+import FormattedAIReport from './FormattedAIReport';
 
 function AIAnalysisPanel({ analysis, loading, onClose }) {
   if (!loading && !analysis) return null;
@@ -16,16 +16,7 @@ function AIAnalysisPanel({ analysis, loading, onClose }) {
         )}
       </div>
       <div className="ai-panel-body">
-        {loading ? (
-          <div className="ai-loading">
-            <div className="ai-spinner"></div>
-            <span>Analyzing data with AI...</span>
-          </div>
-        ) : (
-          <div className="ai-content">
-            <ReactMarkdown>{analysis}</ReactMarkdown>
-          </div>
-        )}
+        <FormattedAIReport response={analysis} loading={loading} title="AI-powered analysis" />
       </div>
     </div>
   );

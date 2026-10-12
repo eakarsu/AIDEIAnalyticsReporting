@@ -1,3 +1,5 @@
+import FormattedAIReport from '../components/FormattedAIReport';
+import FullFieldPresets from '../components/FullFieldPresets';
 import React, { useState, useEffect } from 'react';
 
 const API = 'http://localhost:3001/api';
@@ -14,6 +16,46 @@ const MODULES = [
   { key: 'surveys', label: 'Surveys' },
   { key: 'incidents', label: 'Incidents' }
 ];
+
+const allModules = Object.fromEntries(MODULES.map(({ key }) => [key, true]));
+
+export const AI_TOOL_PRESETS = {
+  threshold: [
+    { label: 'Pay gap alert', values: { metric_type: 'pay_gap_percentage', current_value: 6.2, threshold: 5 } },
+    { label: 'Turnover alert', values: { metric_type: 'turnover_rate_percentage', current_value: 14.5, threshold: 12 } },
+    { label: 'Representation target', values: { metric_type: 'leadership_representation_percentage', current_value: 28, threshold: 40 } }
+  ],
+  executive: [
+    { label: 'Full DEI review', values: { ...allModules } },
+    { label: 'Talent lifecycle', values: { ...allModules, compliance: false, benchmarking: false, incidents: false } },
+    { label: 'Risk and compliance', values: { ...allModules, hiring: false, promotion: false, retention: false, leadership: false, surveys: false } }
+  ],
+  attrition: [
+    { label: 'Engineering · 12 months', values: { department: 'Engineering', time_horizon_months: 12 } },
+    { label: 'Sales · 6 months', values: { department: 'Sales', time_horizon_months: 6 } },
+    { label: 'Finance · 18 months', values: { department: 'Finance', time_horizon_months: 18 } }
+  ],
+  compliance: [
+    { label: 'United States', values: { jurisdiction: 'United States (federal and California)' } },
+    { label: 'United Kingdom', values: { jurisdiction: 'United Kingdom' } },
+    { label: 'European Union', values: { jurisdiction: 'European Union' } }
+  ],
+  intersectionality: [
+    { label: 'Gender × race · pay', values: { dimensions: 'gender,race', focus_metric: 'pay_gap_percentage' } },
+    { label: 'Disability × level · promotion', values: { dimensions: 'disability_status,job_level', focus_metric: 'promotion_rate' } },
+    { label: 'Race × gender × department', values: { dimensions: 'race,gender,department', focus_metric: 'representation_percentage' } }
+  ],
+  pipeline: [
+    { label: 'Inclusive hiring', values: { policy_changes: 'Anonymized resume screening; structured interviews; diverse finalist slates', time_horizon_years: 3, target_groups: 'women, Black employees, Hispanic employees' } },
+    { label: 'Leadership mobility', values: { policy_changes: 'Transparent promotion rubrics; sponsorship program; quarterly talent reviews', time_horizon_years: 5, target_groups: 'women, underrepresented racial groups, employees with disabilities' } },
+    { label: 'Early-career retention', values: { policy_changes: 'Paid internship conversion; manager coaching; first-year mentorship', time_horizon_years: 2, target_groups: 'early-career employees, first-generation professionals' } }
+  ],
+  biasplaybook: [
+    { label: 'Hiring bias', values: { bias_type: 'hiring', severity: 'high', context: 'Interview pass-through rates for Black and Hispanic candidates are below the company average in Engineering. Use structured, job-related criteria and include accountable owners.' } },
+    { label: 'Promotion bias', values: { bias_type: 'promotion', severity: 'critical', context: 'Women and Black employees have lower nomination and promotion rates at the senior-to-lead transition. Include calibration, sponsorship, audit cadence, and success measures.' } },
+    { label: 'Pay equity', values: { bias_type: 'pay', severity: 'medium', context: 'A controlled compensation review found persistent gaps in Sales and Engineering. Separate immediate remediation from longer-term process controls.' } }
+  ]
+};
 
 function AITools({ token }) {
   const [tab, setTab] = useState('threshold');
@@ -206,6 +248,7 @@ function AITools({ token }) {
       {tab === 'threshold' && (
         <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Metric Threshold Check</h2>
+          <FullFieldPresets value={tForm} onChange={setTForm} presets={AI_TOOL_PRESETS.threshold} disabled={tLoading} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
             <input value={tForm.metric_type} onChange={e => setTForm({ ...tForm, metric_type: e.target.value })} placeholder="metric type (e.g. pay_gap_percentage)" style={inp} />
             <input type="number" value={tForm.current_value} onChange={e => setTForm({ ...tForm, current_value: e.target.value })} placeholder="current value" style={inp} />
@@ -213,13 +256,14 @@ function AITools({ token }) {
           </div>
           <button disabled={tLoading} onClick={runThreshold} style={btn}>{tLoading ? 'Checking...' : 'Run check'}</button>
           {tError && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 12 }}>{tError}</div>}
-          {tResult && <pre style={pre}>{JSON.stringify(tResult, null, 2)}</pre>}
+          {tResult && <FormattedAIReport response={tResult} />}
         </div>
       )}
 
       {tab === 'executive' && (
         <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Executive DEI Report</h2>
+          <FullFieldPresets value={selModules} onChange={setSelModules} presets={AI_TOOL_PRESETS.executive} disabled={eLoading} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 12 }}>
             {MODULES.map(m => (
               <label key={m.key} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -230,68 +274,55 @@ function AITools({ token }) {
           </div>
           <button disabled={eLoading} onClick={runExecutive} style={btn}>{eLoading ? 'Generating...' : 'Generate executive report'}</button>
           {eError && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 12 }}>{eError}</div>}
-          {eReport && (
-            <div style={{ marginTop: 16 }}>
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, marginBottom: 12 }}>
-                <div style={{ fontSize: 12, color: '#64748b' }}>Generated: {eReport.generated_at}</div>
-                <div style={{ fontSize: 12, color: '#64748b' }}>Modules: {eReport.modules_included?.join(', ')}</div>
-              </div>
-              <pre style={{ ...pre, whiteSpace: 'pre-wrap' }}>{eReport.narrative}</pre>
-            </div>
-          )}
+          {eReport && <FormattedAIReport response={eReport} title="Executive DEI report" />}
         </div>
       )}
 
       {tab === 'attrition' && (
         <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Attrition Risk Predictor</h2>
+          <FullFieldPresets value={aForm} onChange={setAForm} presets={AI_TOOL_PRESETS.attrition} disabled={aLoading} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 12 }}>
             <input value={aForm.department} onChange={e => setAForm({ ...aForm, department: e.target.value })} placeholder="Department" style={inp} />
             <input type="number" value={aForm.time_horizon_months} onChange={e => setAForm({ ...aForm, time_horizon_months: parseInt(e.target.value || '12', 10) })} placeholder="Horizon (months)" style={inp} />
           </div>
           <button disabled={aLoading} onClick={runAttrition} style={btn}>{aLoading ? 'Analyzing...' : 'Predict attrition risk'}</button>
           {aError && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 12 }}>{aError}</div>}
-          {aResult && (
-            <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 13, color: '#64748b', marginBottom: 8 }}>Data sources: retention {aResult.data_sources?.retention_records} · surveys {aResult.data_sources?.survey_records} · promotion {aResult.data_sources?.promotion_records}</div>
-              <pre style={{ ...pre, whiteSpace: 'pre-wrap' }}>{aResult.analysis}</pre>
-            </div>
-          )}
+          {aResult && <FormattedAIReport response={aResult} title="Attrition risk prediction" />}
         </div>
       )}
 
       {tab === 'compliance' && (
         <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Compliance Calendar</h2>
+          <FullFieldPresets value={{ jurisdiction: cJurisdiction }} onChange={({ jurisdiction }) => setCJurisdiction(jurisdiction)} presets={AI_TOOL_PRESETS.compliance} disabled={cLoading} />
           <div style={{ marginBottom: 12 }}>
             <input value={cJurisdiction} onChange={e => setCJurisdiction(e.target.value)} placeholder="US, UK, EU, California, ..." style={{ ...inp, width: 280 }} />
           </div>
           <button disabled={cLoading} onClick={runCompliance} style={btn}>{cLoading ? 'Generating...' : 'Generate calendar'}</button>
           {cError && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 12 }}>{cError}</div>}
-          {cResult && (
-            <div style={{ marginTop: 16 }}>
-              <pre style={{ ...pre, whiteSpace: 'pre-wrap' }}>{cResult.compliance_calendar}</pre>
-            </div>
-          )}
+          {cResult && <FormattedAIReport response={cResult} title="Compliance calendar" />}
         </div>
       )}
 
       {tab === 'intersectionality' && (
         <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Intersectionality Analysis</h2>
+          <FullFieldPresets value={iForm} onChange={setIForm} presets={AI_TOOL_PRESETS.intersectionality} disabled={iLoading} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 12 }}>
             <input value={iForm.dimensions} onChange={e => setIForm({ ...iForm, dimensions: e.target.value })} placeholder="comma-separated dimensions (e.g. gender,race)" style={inp} />
             <input value={iForm.focus_metric} onChange={e => setIForm({ ...iForm, focus_metric: e.target.value })} placeholder="focus metric" style={inp} />
           </div>
           <button disabled={iLoading} onClick={runIntersectionality} style={btn}>{iLoading ? 'Analyzing...' : 'Run intersectionality analysis'}</button>
           {iError && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 12 }}>{iError}</div>}
-          {iResult && <pre style={{ ...pre, whiteSpace: 'pre-wrap' }}>{iResult.analysis}</pre>}
+          {iResult && <FormattedAIReport response={iResult} title="Intersectionality analysis" />}
         </div>
       )}
 
       {tab === 'pipeline' && (
         <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Talent Pipeline Simulation</h2>
+          <FullFieldPresets value={pForm} onChange={setPForm} presets={AI_TOOL_PRESETS.pipeline} disabled={pLoading} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, marginBottom: 12 }}>
             <textarea value={pForm.policy_changes} onChange={e => setPForm({ ...pForm, policy_changes: e.target.value })} placeholder="Policy changes (use ';' to separate)" style={{ ...inp, minHeight: 80 }} />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
@@ -301,13 +332,14 @@ function AITools({ token }) {
           </div>
           <button disabled={pLoading} onClick={runPipeline} style={btn}>{pLoading ? 'Simulating...' : 'Simulate pipeline'}</button>
           {pError && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 12 }}>{pError}</div>}
-          {pResult && <pre style={{ ...pre, whiteSpace: 'pre-wrap' }}>{pResult.analysis}</pre>}
+          {pResult && <FormattedAIReport response={pResult} title="Talent pipeline simulation" />}
         </div>
       )}
 
       {tab === 'biasplaybook' && (
         <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 12, padding: 20 }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Bias Mitigation Playbook</h2>
+          <FullFieldPresets value={bForm} onChange={setBForm} presets={AI_TOOL_PRESETS.biasplaybook} disabled={bLoading} />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 12 }}>
             <input value={bForm.bias_type} onChange={e => setBForm({ ...bForm, bias_type: e.target.value })} placeholder="Bias type (hiring, promotion, pay, training)" style={inp} />
             <select value={bForm.severity} onChange={e => setBForm({ ...bForm, severity: e.target.value })} style={inp}>
@@ -320,7 +352,7 @@ function AITools({ token }) {
           <textarea value={bForm.context} onChange={e => setBForm({ ...bForm, context: e.target.value })} placeholder="Context (optional)" style={{ ...inp, minHeight: 60, marginBottom: 12 }} />
           <button disabled={bLoading} onClick={runBiasPlaybook} style={btn}>{bLoading ? 'Generating...' : 'Generate playbook'}</button>
           {bError && <div style={{ color: '#dc2626', fontSize: 13, marginTop: 12 }}>{bError}</div>}
-          {bResult && <pre style={{ ...pre, whiteSpace: 'pre-wrap' }}>{bResult.analysis}</pre>}
+          {bResult && <FormattedAIReport response={bResult} title="Bias mitigation playbook" />}
         </div>
       )}
 
@@ -334,14 +366,18 @@ function AITools({ token }) {
           {history.length === 0 ? (
             <div style={{ fontSize: 13, color: '#64748b' }}>No persisted analyses yet.</div>
           ) : (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+            <div>
               {history.map(h => (
-                <li key={h.id} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, marginBottom: 8 }}>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>{h.created_at} · {h.entity_type} · {h.analysis_type}</div>
-                  <div style={{ fontSize: 13, marginTop: 6, whiteSpace: 'pre-wrap' }}>{(h.findings_text || '').substring(0, 600)}{(h.findings_text || '').length > 600 ? '…' : ''}</div>
-                </li>
+                <section key={h.id} style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>{h.created_at} · {h.entity_type || 'AI tool'} · {h.analysis_type}</div>
+                  <FormattedAIReport
+                    response={h.result_json ?? h.findings_text ?? h.key_metrics ?? h}
+                    title={`${String(h.analysis_type || 'Saved AI').replace(/[_-]+/g, ' ')} result`}
+                    model={h.model_used}
+                  />
+                </section>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       )}
@@ -351,6 +387,5 @@ function AITools({ token }) {
 
 const inp = { padding: '8px 12px', fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, width: '100%' };
 const btn = { padding: '8px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 500 };
-const pre = { fontSize: 12, background: '#0f172a', color: '#e2e8f0', padding: 12, borderRadius: 8, overflow: 'auto', maxHeight: 480, marginTop: 12 };
 
 export default AITools;

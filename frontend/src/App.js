@@ -1,3 +1,4 @@
+import AIReportLibrary from "./components/AIReportLibrary";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
@@ -133,7 +134,7 @@ function App() {
             </div>
             <button className="logout-btn" onClick={logout}>Logout</button>
           </div>
-        </nav>
+        <AIReportLibrary /></nav>
         <main className="main-content">
           <Routes>
         <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />

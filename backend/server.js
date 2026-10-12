@@ -101,6 +101,14 @@ app.use('/api/pay-equity-remediation-tracker', require('./routes/payEquityRemedi
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
+
+// Advisory AI reports only; native execution and approval routes stay unchanged.
+const aiWorkspaceSupport = require("./aiWorkspaceAdapters.cjs");
+const aiWorkspaceDatabase = require("./db/schema.js").pool;
+app.use('/api/report-workspace', require("./aiWorkspace.cjs").createAIWorkspaceRouter({
+  pool: aiWorkspaceDatabase, authenticateToken: aiWorkspaceSupport.verifiedActorAuth(require("./middleware/auth.js").authenticateToken),
+  aiRateLimiter: aiWorkspaceSupport.createWorkspaceLimiter(), features: require("./aiWorkspaceFeatures.json"),
+}));
 const start = async () => {
   try {
     await pool.query('SELECT 1');
